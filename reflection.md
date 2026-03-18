@@ -5,12 +5,35 @@
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+
+I will create three classes: walkSchedule, dailyTask, and addPet
+Under each function I will create the logic behind implementing each task so that the UI reflects my UX vision.
+
 - What classes did you include, and what responsibilities did you assign to each?
+
+Pet, Task, and Planner
+
+Pet: Name of the Pet, Type of Pet (Dog or Cat).
+Possible Attributes: pet_name, pet_type, pet_age (maybe?)
+Possible Methods: add_task(task), rmv_task(task_name), get_pet_info(), show_tasks()
+
+Task: Will cover things such as feeding times, bathing times, play times, walk times, and lights out times. Will be responsible for allowing the user to enter data such as when their dog needs to do on their morning, afternoon or evening walks and the average time they typically potty.
+Possible Attributes: task_name("feed", "walk", "bath"), time, duration, due, complete
+Possible Methods: mark_complete(), edit_time(new_time), edit_priority(new_priority), display_task()
+
+Schedule: Responsible for organizing and generating a daily plan based on a pet’s tasks, priorities, and available time.
+Possible Attributes: pet, task, available_time, morning_walk, afternoon_walk, evening_walk
+Possible Methods: generate_schedule(), sort_task_by_priority(), check_conflicts(), show_schedule()
 
 **b. Design changes**
 
 - Did your design change during implementation?
+
+Yes
+
 - If yes, describe at least one change and why you made it.
+
+Created an Owner Class as well when I originally was going to only have 3 classes instead of four.
 
 ---
 
