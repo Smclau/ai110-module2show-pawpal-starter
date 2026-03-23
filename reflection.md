@@ -33,6 +33,10 @@ Yes
 
 - If yes, describe at least one change and why you made it.
 
+Renamed Task.duration to Task.duration_minutes
+   - duration had no unit — could be minutes or hours, causing silent calculation errors
+   - duration_minutes makes the unit explicit and prevents Owner.available_hours mismatches
+
 Created an Owner Class as well when I originally was going to only have 3 classes instead of four.
 
 ---

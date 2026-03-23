@@ -1,0 +1,73 @@
+PawPal+ - pawpal_systems.py Change Log
+=======================================
+
+STRUCTURAL FIXES & DESIGN IMPROVEMENTS
+---------------------------------------
+
+1. Added Owner.add_pet() and Owner.rmv_pet()
+   - Owner had a self.pets list with no way to manage it
+   - Without these methods, callers had to access self.pets directly, breaking encapsulation
+
+2. Removed tasks parameter from sort_tasks_by_priority() and check_conflicts()
+   - Both methods previously required the caller to pass in a task list
+   - They now operate on self.pet.tasks internally
+   - Prevents mismatched lists being passed between the two methods
+
+3. Renamed Task.duration to Task.duration_minutes
+   - duration had no unit — could be minutes or hours, causing silent calculation errors
+   - duration_minutes makes the unit explicit and prevents Owner.available_hours mismatches
+
+4. Added Schedule.overflow_tasks list
+   - Tasks that exceed Owner.available_hours had nowhere to go
+   - overflow_tasks holds tasks that couldn't be scheduled so they aren't silently dropped
+
+5. Made Task.time Optional (Optional[time] = None)
+   - Some tasks are flexible and don't have a fixed time of day
+   - Using Optional allows time to be None for unscheduled/flexible tasks
+   - Also reordered Task fields so defaults come after non-defaults (dataclass requirement)
+
+6. Changed Pet.pet_age from int to float
+   - int only supports whole years, excluding puppies and kittens under 1 year old
+   - float supports ages like 0.5 (6 months)
+
+7. Added Task.is_overdue() method stub
+   - generate_schedule() needs a way to detect and flag past-due tasks
+   - Centralizes the date comparison logic inside Task rather than scattering it in Schedule
+
+IMPORTS ADDED
+-------------
+- from typing import Optional  (for Optional[time] on Task.time)
+- from datetime import date, time  (for typed due and time fields)
+- from enum import Enum  (for Priority enum)
+
+PRIORITY ENUM
+-------------
+- Replaced raw str priority field with Priority(Enum): LOW=1, MEDIUM=2, HIGH=3
+- Prevents invalid priority strings and makes sort_tasks_by_priority() reliable
+
+TASK CLASS ERRORS (to fix)
+---------------------------
+
+Error 1 — edit_time() accepts None silently
+   - Parameter type is `time` but Python doesn't enforce this at runtime
+   - Passing None unschedules the task silently with no feedback to the caller
+   - Fix: add a runtime isinstance check and raise ValueError if None or wrong type
+
+Error 2 — display_task() output is incomplete
+   - Only returns task_name and duration_minutes
+   - priority, due, time, and complete are all missing from output
+   - Fix: include all relevant fields in the formatted return string
+
+Error 3 — duration_minutes allows negative or zero values
+   - Dataclass has no __post_init__ validation
+   - duration_minutes=0 or -30 passes construction silently and breaks conflict math
+   - Fix: add __post_init__ to raise ValueError if duration_minutes < 1
+
+Error 4 — is_overdue() uses date.today() without timezone awareness
+   - Works fine locally but would return inconsistent results across timezones
+   - Low priority for a local app, but worth noting for future deployment
+
+Error 5 — No mark_incomplete() method
+   - mark_complete() sets complete=True but there is no way to reverse it
+   - A user who marks a task done by mistake has no API to undo it
+   - Fix: add mark_incomplete() that sets self.complete = False
