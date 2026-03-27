@@ -34,6 +34,10 @@ class Task:
         """Mark this task as complete."""
         self.complete = True
 
+    def mark_incomplete(self):
+        """Mark this task as incomplete."""
+        self.complete = False
+
     def edit_time(self, new_time: time):
         """Update the scheduled time for this task."""
         if not isinstance(new_time, time):
@@ -79,7 +83,7 @@ class Pet:
 
     def get_pet_info(self):
         """Return a formatted string of this pet's basic information."""
-        return f"{self.pet_name} is a {int(self.pet_age)}-year-old {self.pet_type}."
+        return f"{self.pet_name} is a {self.pet_type}."
 
     def show_tasks(self):
         """Return a formatted string of all tasks assigned to this pet."""
@@ -120,17 +124,26 @@ class Schedule:
         self.overflow_tasks: list = []
 
     def sort_tasks_by_priority(self):
-        """Sort the pet's tasks from highest to lowest priority."""
-        self.pet.tasks = sorted(self.pet.tasks, key=lambda task: task.priority.value, reverse=True)
+        """Sort tasks highest to lowest priority; break ties by shortest duration first."""
+        self.pet.tasks = sorted(
+            self.pet.tasks,
+            key=lambda task: (task.priority.value, -task.duration_minutes),
+            reverse=True
+        )
 
     def check_conflicts(self):
-        """Check for time overlaps between scheduled tasks."""
-        for task_a in self.pet.tasks:
-            for task_b in self.pet.tasks:
-                if task_a == task_b:
-                    continue
-                if task_a.time is None or task_b.time is None:
-                    continue
+        """Return pairs of scheduled tasks whose time windows overlap."""
+        conflicts = []
+        tasks_with_time = [t for t in self.scheduled_tasks if t.time is not None]
+        for i, task_a in enumerate(tasks_with_time):
+            for task_b in tasks_with_time[i + 1:]:
+                a_start = task_a.time.hour * 60 + task_a.time.minute
+                a_end = a_start + task_a.duration_minutes
+                b_start = task_b.time.hour * 60 + task_b.time.minute
+                b_end = b_start + task_b.duration_minutes
+                if a_start < b_end and b_start < a_end:
+                    conflicts.append((task_a, task_b))
+        return conflicts
 
     def generate_schedule(self):
         """Build the schedule by fitting tasks into the owner's available hours."""
@@ -146,9 +159,22 @@ class Schedule:
                 self.overflow_tasks.append(task)
 
     def show_schedule(self):
-        """Return a formatted string of today's scheduled tasks for this pet."""
+        """Return a formatted string of today's scheduled tasks and any overflow."""
         header = f"--- Today's Schedule for {self.owner.owner_name} and {self.pet.pet_name} ---\n"
-        tasks = []
-        for task in self.scheduled_tasks:
-            tasks.append(task.display_task())
-        return header + "\n\n".join(tasks)
+        tasks = [task.display_task() for task in self.scheduled_tasks]
+        result = header + "\n\n".join(tasks)
+
+        if self.overflow_tasks:
+            result += "\n\n--- Could Not Fit (Overflow) ---\n"
+            result += "\n".join(
+                f"  - {t.task_name} ({t.duration_minutes} min, {t.priority.name})"
+                for t in self.overflow_tasks
+            )
+
+        conflicts = self.check_conflicts()
+        if conflicts:
+            result += "\n\n--- Time Conflicts Detected ---\n"
+            for task_a, task_b in conflicts:
+                result += f"  - '{task_a.task_name}' and '{task_b.task_name}' overlap\n"
+
+        return result

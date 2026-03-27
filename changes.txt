@@ -71,3 +71,50 @@ Error 5 — No mark_incomplete() method
    - mark_complete() sets complete=True but there is no way to reverse it
    - A user who marks a task done by mistake has no API to undo it
    - Fix: add mark_incomplete() that sets self.complete = False
+
+UI & BACKEND INTEGRATION FIXES (app.py)
+----------------------------------------
+
+1. Added Create Profile button
+   - Owner and Pet were initialized with default values (Jordan, Mochi) on first load
+   - Button now explicitly creates Owner and Pet from user input and resets tasks
+
+2. Added available_hours input
+   - Owner was always hardcoded with 8 hours
+   - User can now set their daily availability via a number input
+
+3. Added time picker (col4) to task form
+   - Tasks had no way to set a specific time, always showing as Flexible
+   - st.time_input() added as fourth column, passed into Task constructor
+
+4. Wired Add task button to Pet.add_task()
+   - Tasks were stored as plain dicts in session_state only
+   - Now creates a real Task object and calls pet.add_task() before updating display list
+
+5. Added Remove task selectbox
+   - rmv_task() existed in backend but had no UI
+   - Selectbox shows existing tasks, button calls pet.rmv_task() and updates display list
+
+6. Added Mark complete selectbox
+   - mark_complete() existed in backend but had no UI
+   - Selectbox calls task.mark_complete() and updates status in display table
+
+7. Fixed table index starting at 0
+   - st.table() showed 0-based index by default
+   - Switched to st.dataframe() with # column and set_index("#")
+
+8. Fixed mark complete not updating table
+   - task.mark_complete() updated the Task object but not session_state.tasks dict list
+   - Now spreads updated status into the matching dict on mark complete
+
+9. Wired Generate Schedule to real backend
+   - Button showed a placeholder warning
+   - Now pulls owner and pet from session_state, calls Schedule.generate_schedule() and st.text()
+
+10. Called owner.add_pet() on profile creation
+    - Pet was created but never registered with Owner.pets
+    - Now called in both session_state init and Create Profile button
+
+11. Removed placeholder starter text
+    - Original app description and "What you need to build" sections removed
+    - Replaced with clean app description and renamed section headers
