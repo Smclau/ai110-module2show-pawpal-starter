@@ -178,7 +178,7 @@ class Schedule:
     def check_conflicts(self):
         """Return pairs of scheduled tasks whose time windows overlap (same pet)."""
         conflicts = []
-        tasks_with_time = [t for t in self.scheduled_tasks if t.time is not None]
+        tasks_with_time = [t for t in self.scheduled_tasks if t.time is not None and not t.complete]
         for i, task_a in enumerate(tasks_with_time):
             for task_b in tasks_with_time[i + 1:]:
                 a_start = task_a.time.hour * 60 + task_a.time.minute
@@ -206,7 +206,7 @@ class Schedule:
         all_tasks = []
         for s in schedules:
             for task in s.scheduled_tasks:
-                if task.time is not None:
+                if task.time is not None and not task.complete:
                     all_tasks.append((task, s.pet.pet_name))
 
         for i, (task_a, pet_a) in enumerate(all_tasks):
@@ -228,7 +228,9 @@ class Schedule:
 
         minutes_used = 0
         for task in self.pet.tasks:
-            if minutes_used + task.duration_minutes <= total_minutes:
+            if task.complete:
+                continue
+            elif minutes_used + task.duration_minutes <= total_minutes:
                 self.scheduled_tasks.append(task)
                 minutes_used += task.duration_minutes
             else:
