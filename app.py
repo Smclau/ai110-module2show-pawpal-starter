@@ -143,6 +143,7 @@ if st.button("Generate Schedule"):
                 "Time": t.time.strftime("%I:%M %p") if t.time else "Flexible",
                 "Duration": f"{t.duration_minutes} min",
                 "Priority": f"{PRIORITY_EMOJI[t.priority.name]} {t.priority.name}",
+                "Weight": t.compute_weight(),
                 "Repeats": t.recur.name.lower() if t.recur != RecurFrequency.NONE else "—",
                 "Status": "Complete" if t.complete else "Pending",
             }

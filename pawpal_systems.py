@@ -69,6 +69,20 @@ class Task:
             recur=self.recur,
         )
 
+    def compute_weight(self) -> int:
+        """Return a numeric weight score based on priority, overdue status, and recurrence.
+
+        Higher score = scheduled first.
+        Overdue tasks receive a +15 urgency bonus.
+        Recurring tasks receive a +5 habit bonus.
+        """
+        weight = self.priority.value * 10
+        if self.is_overdue():
+            weight += 15
+        if self.recur != RecurFrequency.NONE:
+            weight += 5
+        return weight
+
     def edit_time(self, new_time: time):
         """Update the scheduled time for this task."""
         if not isinstance(new_time, time):
@@ -169,6 +183,14 @@ class Schedule:
             reverse=True
         )
 
+    def sort_tasks_by_weight(self):
+        """Sort tasks by computed weight score (priority + urgency + recurrence); break ties by shortest duration."""
+        self.pet.tasks = sorted(
+            self.pet.tasks,
+            key=lambda task: (task.compute_weight(), -task.duration_minutes),
+            reverse=True
+        )
+
     def sort_scheduled_by_time(self):
         """Sort scheduled tasks by time; flexible (no time) tasks go last."""
         self.scheduled_tasks.sort(
@@ -222,8 +244,8 @@ class Schedule:
         return conflicts
 
     def generate_schedule(self):
-        """Build the schedule by fitting tasks into the owner's available hours."""
-        self.sort_tasks_by_priority()
+        """Build the schedule by fitting tasks into the owner's available hours, ordered by weight score."""
+        self.sort_tasks_by_weight()
         total_minutes = self.owner.available_hours * 60
 
         minutes_used = 0

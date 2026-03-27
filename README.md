@@ -28,6 +28,21 @@ PawPal+ is a Streamlit app that helps pet owners plan and track daily care tasks
 - Marking a recurring task complete automatically creates a fresh pending instance for the next occurrence
 - Non-recurring tasks are completed once and stay in history
 
+### Weighted Prioritization *(Challenge Feature)*
+Rather than sorting purely by priority label, each task is assigned a numeric weight score that reflects real-world urgency:
+
+| Factor | Points |
+|---|---|
+| HIGH priority | 30 |
+| MEDIUM priority | 20 |
+| LOW priority | 10 |
+| Task is overdue | +15 |
+| Task is recurring | +5 |
+
+This means an overdue MEDIUM task (35 pts) schedules before a regular HIGH task (30 pts) — because a missed feeding is more urgent than a grooming session added today. The Weight column in the generated schedule shows each task's score so the owner can see why tasks were ordered the way they were.
+
+Implemented via `Task.compute_weight()` and `Schedule.sort_tasks_by_weight()`.
+
 ### Conflict Detection
 - **Same-pet conflicts** — flags any two tasks whose time windows overlap within one pet's schedule
 - **Cross-pet conflicts** — detects cases where tasks for different pets are scheduled at the same time, catching situations where the owner can't be in two places at once
@@ -37,7 +52,7 @@ PawPal+ is a Streamlit app that helps pet owners plan and track daily care tasks
 
 ## 📸 Demo
 
-<a href="umls.png" target="_blank"><img src='umls.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
+<a href="PawPal+" target="_blank"><img src='image.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
 
 ---
 
