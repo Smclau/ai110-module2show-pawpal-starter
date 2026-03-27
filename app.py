@@ -47,6 +47,39 @@ with col4:
 recur = st.selectbox("Repeats", ["none", "daily", "weekly"])
 
 PRIORITY_EMOJI = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}
+STATUS_EMOJI   = {"Complete": "✅", "Pending": "⏳", "Overdue": "⚠️"}
+
+TASK_EMOJI_MAP = {
+    "walk":     "🦮",
+    "feed":     "🍽️",
+    "food":     "🍽️",
+    "bath":     "🛁",
+    "groom":    "🛁",
+    "brush":    "🛁",
+    "med":      "💊",
+    "vet":      "💊",
+    "play":     "🎾",
+    "exercise": "🎾",
+    "sleep":    "😴",
+    "nap":      "😴",
+    "train":    "🏋️",
+}
+
+def task_emoji(task_name: str) -> str:
+    """Return an emoji based on keywords in the task name."""
+    lower = task_name.lower()
+    for keyword, emoji in TASK_EMOJI_MAP.items():
+        if keyword in lower:
+            return emoji
+    return "📋"
+
+def status_label(task) -> str:
+    """Return a status string with emoji."""
+    if task.complete:
+        return f"{STATUS_EMOJI['Complete']} Complete"
+    if task.is_overdue():
+        return f"{STATUS_EMOJI['Overdue']} Overdue"
+    return f"{STATUS_EMOJI['Pending']} Pending"
 
 if st.button("Add task"):
     recur_map = {
@@ -81,12 +114,12 @@ if pet.tasks:
         rows = [
             {
                 "#": i + 1,
-                "title": t.task_name,
+                "task": f"{task_emoji(t.task_name)} {t.task_name}",
                 "time": t.time.strftime("%I:%M %p") if t.time else "Flexible",
                 "duration (min)": t.duration_minutes,
                 "priority": f"{PRIORITY_EMOJI[t.priority.name]} {t.priority.name.lower()}",
-                "repeats": t.recur.name.lower() if t.recur != RecurFrequency.NONE else "—",
-                "status": "Complete" if t.complete else "Pending",
+                "repeats": f"🔄 {t.recur.name.lower()}" if t.recur != RecurFrequency.NONE else "—",
+                "status": status_label(t),
             }
             for i, t in enumerate(filtered)
         ]
@@ -139,13 +172,13 @@ if st.button("Generate Schedule"):
         st.success(f"Scheduled {len(schedule.scheduled_tasks)} task(s) for {pet.pet_name} — {pending_count} still pending.")
         rows = [
             {
-                "Task": t.task_name,
+                "Task": f"{task_emoji(t.task_name)} {t.task_name}",
                 "Time": t.time.strftime("%I:%M %p") if t.time else "Flexible",
                 "Duration": f"{t.duration_minutes} min",
                 "Priority": f"{PRIORITY_EMOJI[t.priority.name]} {t.priority.name}",
                 "Weight": t.compute_weight(),
-                "Repeats": t.recur.name.lower() if t.recur != RecurFrequency.NONE else "—",
-                "Status": "Complete" if t.complete else "Pending",
+                "Repeats": f"🔄 {t.recur.name.lower()}" if t.recur != RecurFrequency.NONE else "—",
+                "Status": status_label(t),
             }
             for t in schedule.scheduled_tasks
         ]
