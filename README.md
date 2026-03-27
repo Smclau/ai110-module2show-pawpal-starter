@@ -32,6 +32,16 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+## Smarter Scheduling
+
+The following features were added beyond the base requirements:
+
+- **Sort by time** — the generated schedule displays tasks in chronological order, with flexible (no fixed time) tasks placed at the end
+- **Filter by status** — tasks can be filtered by `pending`, `complete`, or `overdue` in both the UI and backend
+- **Recurring tasks** — tasks can repeat `daily` or `weekly`; marking one complete automatically creates a new instance for the next occurrence
+- **Same-pet conflict detection** — the scheduler checks for overlapping time windows within a single pet's schedule and reports warnings
+- **Cross-pet conflict detection** — `Schedule.check_cross_pet_conflicts()` catches cases where tasks for different pets are scheduled at the same time, flagging that the owner can't be in two places at once
+
 ### Suggested workflow
 
 1. Read the scenario carefully and identify requirements and edge cases.
